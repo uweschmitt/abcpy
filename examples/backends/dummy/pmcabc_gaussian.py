@@ -6,12 +6,12 @@ def infer_parameters():
 
     # define prior
     from abcpy.continuousmodels import Uniform
-    mu = Uniform([[150], [200]], name='mu')
-    sigma = Uniform([[5], [25]], name='sigma')
+    mu = Uniform([[150], [200]], )
+    sigma = Uniform([[5], [25]], )
     
     # define the model
     from abcpy.continuousmodels import Normal
-    height = Normal([mu, sigma])
+    height = Normal([mu, sigma], )
     
     # define statistics
     from abcpy.statistics import Identity
@@ -32,7 +32,7 @@ def infer_parameters():
     
     # define sampling scheme
     from abcpy.inferences import PMCABC
-    sampler = PMCABC([height], distance_calculator, backend, kernel, seed=1)
+    sampler = PMCABC([height], [distance_calculator], backend, kernel, seed=1)
     
     # sample from scheme
     T, n_sample, n_samples_per_param = 3, 250, 10
@@ -45,13 +45,13 @@ def infer_parameters():
 
 def analyse_journal(journal):
     # output parameters and weights
-    print(journal.get_parameters())
-    print(journal.get_weights())
+    journal.get_parameters()
+    journal.get_weights()
     
     # do post analysis
-    print(journal.posterior_mean())
-    print(journal.posterior_cov())
-    print(journal.posterior_histogram())
+    journal.posterior_mean()
+    journal.posterior_cov()
+    journal.posterior_histogram()
     
     # print configuration
     print(journal.configuration)

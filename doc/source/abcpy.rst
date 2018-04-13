@@ -27,9 +27,21 @@ abcpy.approx_lhd module
 abcpy.backends module
 ---------------------
 
-.. automodule:: abcpy.backends
+.. automodule:: abcpy.backends.base
     :members:
-    :special-members: __init__       
+    :special-members: __init__
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: abcpy.backends.spark
+    :members:
+    :special-members: __init__
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: abcpy.backends.mpi
+    :members:
+    :special-members: __init__
     :undoc-members:
     :show-inheritance:
 
@@ -38,7 +50,7 @@ abcpy.continuousmodels module
 
 .. automodule:: abcpy.continuousmodels
     :members:
-    :special-members: __init__, _check_parameters_at_initialization, _check_parameters_before_sampling, _check_parameters_fixed
+    :special-members: __init__, _check_parameters_at_initialization, _check_parameters_before_sampling, _check_output
     :undoc-members:
     :show-inheritance:
 
@@ -47,7 +59,7 @@ abcpy.discretemodels module
 
 .. automodule:: abcpy.discretemodels
     :members:
-    :special-members: __init__, _check_parameters_at_initialization, _check_parameters_before_sampling, _check_parameters_fixed
+    :special-members: __init__, _check_parameters_at_initialization, _check_parameters_before_sampling, _check_output
     :undoc-members:
     :show-inheritance:
 
@@ -66,15 +78,6 @@ abcpy.graphtools module
 .. automodule:: abcpy.graphtools
     :members:
     :special-members: __init__, _sample_from_prior, _reset_flags, _get_mapping, _get_names_and_parameters
-    :undoc-members:
-    :show-inheritance:
-
-abcpy.models module
--------------------
-
-.. automodule:: abcpy.models
-    :members:
-    :special-members: __init__, _check_parameters_at_initialization, _check_parameters_before_sampling, _check_parameters_fixed
     :undoc-members:
     :show-inheritance:
 
@@ -110,7 +113,7 @@ abcpy.probabilisticmodels module
 
 .. automodule:: abcpy.probabilisticmodels
     :members:
-    :special-members: __init__, _check_parameters_at_initialization, _check_parameters_before_sampling, _check_parameters_fixed, __get_item__, __add__, __sub__, __mul__, __truediv__, __pow__
+    :special-members: __init__, _check_input, _check_output, __get_item__, __add__, __sub__, __mul__, __truediv__, __pow__
     :undoc-members:
     :show-inheritance:
 

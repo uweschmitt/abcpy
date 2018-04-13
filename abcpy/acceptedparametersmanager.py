@@ -1,10 +1,11 @@
 from abcpy.probabilisticmodels import Hyperparameter, ModelResultingFromOperation
+import numpy as np
 
 
 class AcceptedParametersManager:
     def __init__(self, model):
         """
-        This class managed the accepted parameters and other bds objects.
+        This class manages the accepted parameters and other bds objects.
 
         Parameters
         ----------
@@ -45,6 +46,7 @@ class AcceptedParametersManager:
         kernel_parameters: list
             A list, in which each entry contains the values of the parameters associated with the corresponding kernel in the joint perturbation kernel
         """
+
         self.kernel_parameters_bds = backend.broadcast(kernel_parameters)
 
     def update_broadcast(self, backend, accepted_parameters=None, accepted_weights=None, accepted_cov_mats=None):
@@ -77,6 +79,7 @@ class AcceptedParametersManager:
     def get_mapping(self, models, is_root=True, index=0):
         """Returns the order in which the models are discovered during recursive depth-first search.
         Commonly used when returning the accepted_parameters_bds for certain models.
+
         Parameters
         ----------
         models: list
@@ -101,11 +104,11 @@ class AcceptedParametersManager:
 
                 # Only parameters that are neither root nor Hyperparameters are included in the mapping
                 if(not(is_root) and not(isinstance(model, ModelResultingFromOperation))):
-                    for i in range(model.dimension):
+                    for i in range(model.get_output_dimension()):
                         mapping.append((model, index))
                         index+=1
 
-                for parent, parent_index in model.parents:
+                for parent in model.get_input_models():
                     parent_mapping, index = self.get_mapping([parent], is_root= False, index=index)
                     for element in parent_mapping:
                         mapping.append(element)
@@ -121,7 +124,7 @@ class AcceptedParametersManager:
         Returns the accepted bds values for the specified models.
 
         Parameters
-        ----------.
+        ----------
         models: list
             Contains the probabilistic models for which the accepted bds values should be returned
 
@@ -129,7 +132,6 @@ class AcceptedParametersManager:
         -------
         list:
             The accepted_parameters_bds values of all the probabilistic models specified in models.
-
         """
 
         # Get the enumerated recursive depth-first search ordering
@@ -143,7 +145,7 @@ class AcceptedParametersManager:
                 if(model==prob_model):
                     for i in range(len(self.accepted_parameters_bds.value())):
                         accepted_bds_values[i].append(self.accepted_parameters_bds.value()[i][index])
-
+        accepted_bds_values = [np.array(x).reshape(-1, ) for x in accepted_bds_values]
         return accepted_bds_values
 
     def _reset_flags(self, models=None):
@@ -159,7 +161,7 @@ class AcceptedParametersManager:
             models = self.model
 
         for model in models:
-            for parent, parent_index in model.parents:
+            for parent in model.get_input_models():
                 if(parent.visited):
                     self._reset_flags([parent])
             model.visited=False

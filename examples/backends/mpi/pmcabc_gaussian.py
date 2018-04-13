@@ -13,11 +13,12 @@ def infer_parameters():
 
     # define prior
     from abcpy.continuousmodels import Uniform
-    prior = Uniform([[150, 5],[200, 25]])
+    mu = Uniform([[150], [200]], )
+    sigma = Uniform([[5], [25]], )
 
     # define the model
     from abcpy.continuousmodels import Normal
-    model = Normal([prior])
+    height = Normal([mu, sigma], )
 
     # define statistics
     from abcpy.statistics import Identity
@@ -29,7 +30,7 @@ def infer_parameters():
 
     # define sampling scheme
     from abcpy.inferences import PMCABC
-    sampler = PMCABC([model], distance_calculator, backend, seed=1)
+    sampler = PMCABC([height], [distance_calculator], backend, seed=1)
     
     # sample from scheme
     T, n_sample, n_samples_per_param = 3, 250, 10
@@ -82,8 +83,8 @@ class ExampleGaussianMPITest(unittest.TestCase):
     def test_example(self):
         journal = infer_parameters()
         test_result = journal.posterior_mean()[0]
-        expected_result = 176.0
-        self.assertLess(abs(test_result - expected_result), 2.)
+        expected_result = 178.07690877694714
+        self.assertLess(abs(test_result - expected_result), 2)
 
 
 if __name__  == "__main__":

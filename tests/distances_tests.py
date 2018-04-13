@@ -16,15 +16,15 @@ class EuclideanTests(unittest.TestCase):
         c = [[1, 1, 1],[1, 1, 1]]
         #Checks whether wrong input type produces error message
         self.assertRaises(TypeError, self.distancefunc.distance, 3.4, b)
-        self.assertRaises(TypeError, self.distancefunc.distance, a, 3.4)        
+        self.assertRaises(TypeError, self.distancefunc.distance, a, 3.4)
 
         # test input has different dimensionality
         self.assertRaises(BaseException, self.distancefunc.distance, a, np.array([[0, 0], [1, 2]]))  
         self.assertRaises(BaseException, self.distancefunc.distance, a, np.array([[0, 0, 0], [1, 2, 3], [4, 5, 6]]))        
 
-        # test whether they compute correct values        
-        self.assertTrue(all(self.distancefunc.distance([a],[b]) == np.array([0, 0])))
-        self.assertTrue(all(self.distancefunc.distance([a],[c]) == np.array([1.7320508075688772, 1.7320508075688772])))
+        # test whether they compute correct values
+        self.assertTrue(self.distancefunc.distance(a,b) == np.array([0]))
+        self.assertTrue(self.distancefunc.distance(a,c) == np.array([1.7320508075688772]))
         
     def test_dist_max(self):
         self.assertTrue(self.distancefunc.dist_max() == np.inf)        
@@ -38,6 +38,7 @@ class PenLogRegTests(unittest.TestCase):
     def test_distance(self):
         d1 = 0.5 * np.random.randn(100,2) - 10
         d2 = 0.5 * np.random.randn(100,2) + 10
+
         d1=d1.tolist()
         d2=d2.tolist()
         #Checks whether wrong input type produces error message
@@ -51,8 +52,7 @@ class PenLogRegTests(unittest.TestCase):
         self.assertEqual(self.distancefunc.distance(d1,d1), 0.0)
         
     def test_dist_max(self):
-        self.assertTrue(self.distancefunc.dist_max() == 1.0)        
-
+        self.assertTrue(self.distancefunc.dist_max() == 1.0)
 
 
 class LogRegTests(unittest.TestCase):
@@ -64,7 +64,7 @@ class LogRegTests(unittest.TestCase):
         d1 = 0.5 * np.random.randn(100,2) - 10
         d2 = 0.5 * np.random.randn(100,2) + 10
 
-        d1= d1.tolist()
+        d1=d1.tolist()
         d2=d2.tolist()
         
         #Checks whether wrong input type produces error message

@@ -9,8 +9,7 @@ from glmnet import LogitNet
 
 class Approx_likelihood(metaclass = ABCMeta):
     """This abstract base class defines the approximate likelihood 
-    function. To approximate the likelihood function at a parameter value given observed data set,
-    we need to pass a data set simulated from model set at the parameter value and the observed data set.
+    function.
     """
 
     @abstractmethod
@@ -67,7 +66,7 @@ class SynLiklihood(Approx_likelihood):
         self.statistics_calc = statistics_calc
 
 
-    def likelihood(self, y_obs, y_sim, ind):
+    def likelihood(self, y_obs, y_sim):
         # print("DEBUG: SynLiklihood.likelihood().")
         if not isinstance(y_obs, list):
             raise TypeError('Observed data is not of allowed types')
@@ -142,14 +141,14 @@ class PenLogReg(Approx_likelihood, GraphTools):
         self.seed = seed
         self.max_iter = max_iter
         # Simulate reference data and extract summary statistics from the reference data
-        self.ref_data_stat = self._simulate_ref_data()
+        self.ref_data_stat = self._simulate_ref_data()[0]
 
         self.stat_obs = None
         self.data_set = None
         
 
         
-    def likelihood(self, y_obs, y_sim, ind):
+    def likelihood(self, y_obs, y_sim):
         if not isinstance(y_obs, list):
             raise TypeError('Observed data is not of allowed types')
         
@@ -166,7 +165,7 @@ class PenLogReg(Approx_likelihood, GraphTools):
         
         # Compute the approximate likelihood for the y_obs given theta
         y = np.append(np.zeros(self.n_simulate),np.ones(self.n_simulate))
-        X = np.array(np.concatenate((stat_sim,self.ref_data_stat[ind]),axis=0))
+        X = np.array(np.concatenate((stat_sim,self.ref_data_stat),axis=0))
         m = LogitNet(alpha = 1, n_splits = self.n_folds, max_iter = self.max_iter, random_state= self.seed)
         m = m.fit(X, y)
         result = np.exp(-np.sum((m.intercept_+np.sum(np.multiply(m.coef_,self.stat_obs),axis=1)),axis=0))
@@ -185,11 +184,9 @@ class PenLogReg(Approx_likelihood, GraphTools):
         for model_index, model in enumerate(self.model):
             ind=0
             while(ref_data_stat[model_index][-1] is None):
-                data = model.sample_from_distribution(1, rng=rng)
-                if(data[0]):
-                    data_stat = self.statistics_calc.statistics(data[1].tolist())
-                    ref_data_stat[model_index][ind]= data_stat
-                    ind+=1
+                data = model.forward_simulate(model.get_input_values(), 1, rng=rng)
+                data_stat = self.statistics_calc.statistics(data[0].tolist())
+                ref_data_stat[model_index][ind]= data_stat
+                ind+=1
             ref_data_stat[model_index] = np.squeeze(np.asarray(ref_data_stat[model_index]))
-            
         return ref_data_stat

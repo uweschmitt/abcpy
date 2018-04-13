@@ -1,49 +1,63 @@
 import numpy as np
 
-from abcpy.probabilisticmodels import ProbabilisticModel, Hyperparameter
+from numbers import Number
+from abcpy.probabilisticmodels import ProbabilisticModel, Continuous, InputConnector
 from gaussian_model_simple import gaussian_model
 
-class Gaussian(ProbabilisticModel):
+class Gaussian(ProbabilisticModel, Continuous):
+
     def __init__(self, parameters, name='Gaussian'):
-        super(Gaussian, self).__init__(parameters)
-        self.dimension = 1
-        self.name=name
+        # We expect input of type parameters = [mu, sigma]
+        if not isinstance(parameters, list):
+            raise TypeError('Input of Normal model is of type list')
 
-    def _check_parameters_at_initialization(self, parameters):
-        if(len(parameters)!=2):
-            raise IndexError('Gaussian should have exactly two input parameters.')
-        variance, index = parameters[1]
-        if(isinstance(variance, Hyperparameter) and variance.fixed_values[0]<0):
-            raise ValueError('Variance has to be larger than 0.')
+        if len(parameters) != 2:
+            raise RuntimeError('Input list must be of length 2, containing [mu, sigma].')
 
-    def _check_parameters_before_sampling(self, parameters):
-        if(parameters[1]<0):
+        input_connector = InputConnector.from_list(parameters)
+        super().__init__(input_connector, name)
+
+    def _check_input(self, input_values):
+        # Check whether input has correct type or format
+        if len(input_values) != 2:
+            raise ValueError('Number of parameters of Normal model must be 2.')
+
+        # Check whether input is from correct domain
+        mu = input_values[0]
+        sigma = input_values[1]
+        if sigma < 0:
             return False
+
         return True
 
-    def _check_parameters_fixed(self, parameters):
+    def _check_output(self, values):
+        if not isinstance(values, Number):
+            raise ValueError('Output of the normal distribution is always a number.')
+
+        # At this point values is a number (int, float); full domain for Normal is allowed
         return True
 
-    def pdf(self, x):
-        parameter_values = self.get_parameter_values()
-        mu = parameter_values[0]
-        sigma = parameter_values[1]
-        return norm(mu, sigma).pdf(x)
+    def get_output_dimension(self):
+        return 1
 
-    def sample_from_distribution(self, k, rng=np.random.RandomState()):
-        parameter_values = self.get_parameter_values()
-        return_value = []
-        return_value.append(self._check_parameters_before_sampling(parameter_values))
+    def forward_simulate(self, input_values, k, rng=np.random.RandomState()):
+        # Extract the input parameters
+        mu = input_values[0]
+        sigma = input_values[1]
+        seed = rng.randint(np.iinfo(np.int32).max)
 
-        if(return_value[0]):
-            mu = parameter_values[0]
-            sigma = parameter_values[1]
-            seed = rng.randint(np.iinfo(np.int32).max)
-            result = gaussian_model(k, mu, sigma, seed)
-            return_value.append(np.array(list(return_value)))
+        # Do the actual forward simulation
+        vector_of_k_samples = gaussian_model(k, mu, sigma, seed)
 
-        return return_value
-	    
+        # Format the output to obey API
+        result = [np.array([x]) for x in vector_of_k_samples]
+        return result
+
+    def pdf(self, input_values, x):
+        mu = input_values[0]
+        sigma = input_values[1]
+        pdf = np.norm(mu, sigma).pdf(x)
+        return pdf
 
 def infer_parameters():
     # define observation for true parameters mean=170, std=15
@@ -51,10 +65,10 @@ def infer_parameters():
 
     # define prior
     from abcpy.continuousmodels import Uniform
-    prior = Uniform([[150, 5],[200, 25]])
+    prior = Uniform([[150, 5], [200, 25]], )
     
     # define the model
-    model = Gaussian([prior])
+    model = Gaussian([prior], )
     
     # define statistics
     from abcpy.statistics import Identity
@@ -71,7 +85,7 @@ def infer_parameters():
     
     # define sampling scheme
     from abcpy.inferences import PMCABC
-    sampler = PMCABC([model], distance_calculator, backend)
+    sampler = PMCABC([model], [distance_calculator], backend)
     
     # sample from scheme
     T, n_sample, n_samples_per_param = 3, 100, 10

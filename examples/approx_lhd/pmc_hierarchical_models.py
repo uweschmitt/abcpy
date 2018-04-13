@@ -7,16 +7,16 @@ def infer_parameters():
 
     # The prior information changing the class size and social background, depending on school location
     from abcpy.continuousmodels import Uniform, Normal
-    school_location = Uniform([[0.2],[0.3]], name='school_location')
+    school_location = Uniform([[0.2], [0.3]], )
 
     # The average class size of a certain school
-    class_size = Normal([[school_location], [0.1]], name='class_size')
+    class_size = Normal([[school_location], [0.1]], )
 
     # The social background of a student
-    background = Normal([[school_location],[0.1]], name='background')
+    background = Normal([[school_location], [0.1]], )
 
     # The grade a student would receive without any bias
-    grade_without_additional_effects = Normal([[4.5],[0.25]], name='grade')
+    grade_without_additional_effects = Normal([[4.5], [0.25]], )
 
     # The grade a student of a certain school receives
     final_grade = grade_without_additional_effects-class_size-background
@@ -25,18 +25,20 @@ def infer_parameters():
     scholarship_obs = [2.7179657436207805, 2.124647285937229, 3.07193407853297, 2.335024761813643, 2.871893855192, 3.4332002458233837, 3.649996835818173, 3.50292335102711, 2.815638168018455, 2.3581613289315992, 2.2794821846395568, 2.8725835459926503, 3.5588573782815685, 2.26053126526137, 1.8998143530749971, 2.101110815311782, 2.3482974964831573, 2.2707679029919206, 2.4624550491079225, 2.867017757972507, 3.204249152084959, 2.4489542437714213, 1.875415915801106, 2.5604889644872433, 3.891985093269989, 2.7233633223405205, 2.2861070389383533, 2.9758813233490082, 3.1183403287267755, 2.911814060853062, 2.60896794303205, 3.5717098647480316, 3.3355752461779824, 1.99172284546858, 2.339937680892163, 2.9835630207301636, 2.1684912355975774, 3.014847335983034, 2.7844122961916202, 2.752119871525148, 2.1567428931391635, 2.5803629307680644, 2.7326646074552103, 2.559237193255186, 3.13478196958166, 2.388760269933492, 3.2822443541491815, 2.0114405441787437, 3.0380056368041073, 2.4889680313769724, 2.821660164621084, 3.343985964873723, 3.1866861970287808, 4.4535037154856045, 3.0026333138006027, 2.0675706089352612, 2.3835301730913185, 2.584208398359566, 3.288077633446465, 2.6955853384148183, 2.918315169739928, 3.2464814419322985, 2.1601516779909433, 3.231003347780546, 1.0893224045062178, 0.8032302688764734, 2.868438615047827]
 
     # A quantity that determines whether a student will receive a scholarship
-    scholarship_without_additional_effects = Normal([[2],[0.5]], name='scholarship')
+    scholarship_without_additional_effects = Normal([[2], [0.5]], )
 
     # A quantity determining whether a student receives a scholarship, including his social background
     final_scholarship = scholarship_without_additional_effects + 3*background
 
-    # Define a summary statistics
+    # Define a summary statistics for final grade and final scholarship
     from abcpy.statistics import Identity
-    statistics_calculator = Identity(degree = 2, cross = False)
+    statistics_calculator_final_grade = Identity(degree = 2, cross = False)
+    statistics_calculator_final_scholarship = Identity(degree = 3, cross = False)
 
-    # Define a distance measure
-    from abcpy.distances import DefaultJointDistance
-    distance_calculator = DefaultJointDistance(statistics_calculator)
+    # Define a distance measure for final grade and final scholarship
+    from abcpy.approx_lhd import SynLiklihood
+    approx_lhd_final_grade = SynLiklihood(statistics_calculator_final_grade)
+    approx_lhd_final_scholarship = SynLiklihood(statistics_calculator_final_scholarship)
 
     # Define a backend
     from abcpy.backends import BackendDummy as Backend
@@ -44,24 +46,24 @@ def infer_parameters():
 
     # Define a perturbation kernel
     from abcpy.perturbationkernel import DefaultKernel
-    kernel = DefaultKernel([school_location, class_size, grade, background, scholarship])
+    kernel = DefaultKernel([school_location, class_size, grade_without_additional_effects, \
+                            background, scholarship_without_additional_effects])
 
     # Define sampling parameters
     T, n_sample, n_samples_per_param = 3, 250, 10
-    eps_arr = np.array([.75])
-    epsilon_percentile = 10
 
     # Define sampler
-    from abcpy.inferences import PMCABC
-    sampler = PMCABC([final_grade, final_scholarship], distance_calculator, backend, kernel)
+    from abcpy.inferences import PMC
+    sampler = PMC([final_grade, final_scholarship], \
+                     [approx_lhd_final_grade, approx_lhd_final_scholarship], backend, kernel)
 
     # Sample
-    journal = sampler.sample([grades_obs, scholarship_obs], T, eps_arr, n_sample, n_samples_per_param, epsilon_percentile)
+    journal = sampler.sample([grades_obs, scholarship_obs], T, n_sample, n_samples_per_param)
 
 
 def analyse_journal(journal):
     # output parameters and weights
-    print(journal.get_parameters())
+    print(journal.get_stored_output_values())
     print(journal.weights)
 
     # do post analysis

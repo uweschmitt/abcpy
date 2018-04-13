@@ -112,7 +112,8 @@ class Euclidean(Distance):
     def __init__(self, statistics):
         self.statistics_calc = statistics
 
-        # Since the observations do always stay the same, we can save the summary statistics of them and not recalculate it each time
+        # Since the observations do always stay the same, we can save the
+        #  summary statistics of them and not recalculate it each time
         self.s1 = None
         self.data_set = None
 
@@ -125,21 +126,23 @@ class Euclidean(Distance):
         d1, d2: list
             A list, containing a list describing the data set
         """
-        d1 = d1[0]
-        d2 = d2[0]
-        if len(d1) != len(d2):
-            raise BaseException("Input data sets have different sizes: {} vs {}".format(len(d1), len(d2)))
+        if not isinstance(d1, list):
+            raise TypeError('Data is not of allowed types')
+        if not isinstance(d2, list):
+            raise TypeError('Data is not of allowed types')
+
+        # Extract summary statistics from the dataset
         if(self.s1 is None or self.data_set!=d1):
             self.s1 = self.statistics_calc.statistics(d1)
             self.data_set = d1
         s2 = self.statistics_calc.statistics(d2)
 
         # compute distance between the statistics
-        dist = np.zeros(shape=(self.s1.shape[0],self.s1.shape[0]))
+        dist = np.zeros(shape=(self.s1.shape[0],s2.shape[0]))
         for ind1 in range(0, self.s1.shape[0]):
             for ind2 in range(0, s2.shape[0]):
                 dist[ind1,ind2] = np.sqrt(np.sum(pow(self.s1[ind1,:]-s2[ind2,:],2)))
-                
+
         return dist.mean()
 
     
@@ -183,12 +186,17 @@ class PenLogReg(Distance):
         d1, d2: list
             A list, containing a list describing the data set
         """
+        if not isinstance(d1, list):
+            raise TypeError('Data is not of allowed types')
+        if not isinstance(d2, list):
+            raise TypeError('Data is not of allowed types')
+
         # Extract summary statistics from the dataset
         if(self.s1 is None or self.data_set!=d1):
             self.s1 = self.statistics_calc.statistics(d1)
             self.data_set = d1
         s2 = self.statistics_calc.statistics(d2)
-         
+
         # compute distnace between the statistics 
         training_set_features = np.concatenate((self.s1, s2), axis=0)
         label_s1 = np.zeros(shape=(len(self.s1), 1))
@@ -231,8 +239,11 @@ class LogReg(Distance):
         d1, d2: list
             A list, containing a list describing the data set
         """
-        d1 = d1[0]
-        d2 = d2[0]
+        if not isinstance(d1, list):
+            raise TypeError('Data is not of allowed types')
+        if not isinstance(d2, list):
+            raise TypeError('Data is not of allowed types')
+
         # Extract summary statistics from the dataset
         if(self.s1 is None or self.data_set!=d1):
             self.s1 = self.statistics_calc.statistics(d1)
@@ -254,30 +265,3 @@ class LogReg(Distance):
 
     def dist_max(self):
         return 1.0
-
-
-class DefaultJointDistance(Distance):
-    def __init__(self, statistics):
-        """This class implements a default distance to be used when multiple root models exist. It uses LogReg as the distance calculator for each root model, and adds all individual distances.
-
-        Parameters
-        ----------
-        statistics: abcpy.statistics object
-            The statistics calculator to be used
-        number_of_models: integer
-            The number of root models on which the distance will act.
-        """
-        self.statistics_calc = statistics
-        self.distance_calc = Euclidean(self.statistics_calc)
-
-    def distance(self, d1, d2):
-        total_distance = 0
-        for observed_data, simulated_data in zip(d1,d2):
-            total_distance+=self.distance_calc.distance([observed_data], [simulated_data])
-        total_distance/=len(d2)
-        return total_distance
-
-    def dist_max(self):
-        return np.inf
-         
-    
