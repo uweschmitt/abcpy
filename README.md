@@ -93,12 +93,3 @@ If you want to contribute code, there are a few things to consider:
 * consider documenting your code according to the [NumPy documentation style guide](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt)
 * consider writing reasonable [unit tests](https://docs.python.org/3.5/library/unittest.html)
 
-
-In case of any questions, feel free to contact one of us:
-* Ritabrata Dutta, University of Lugano
-* Marcel Schoengens, CSCS, ETH Zurich
-
-
-## Status
-[![Documentation Status](https://readthedocs.org/projects/abcpy/badge/?version=latest)](http://abcpy.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/eth-cscs/abcpy.svg?branch=master)](https://travis-ci.org/eth-cscs/abcpy)
