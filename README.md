@@ -1,4 +1,4 @@
-# ABCpy 
+# ABCpy [Documentation Status](https://readthedocs.org/projects/abcpy/badge/?version=latest)](http://abcpy.readthedocs.io/en/latest/?badge=latest) [Build Status](https://travis-ci.org/eth-cscs/abcpy.svg?branch=master)](https://travis-ci.org/eth-cscs/abcpy)
 
 ABCpy is a scientific library written in Python for Bayesian uncertainty quantification in
 absence of likelihood function, which parallelizes existing approaximate Bayesian computation (ABC) 
@@ -19,7 +19,7 @@ ABCpy addresses the needs of domain scientists and data
 scientists by providing
 
 * a fully modularized framework that is easy to use and easy to extend, 
-* a quick way to integrate your egenrative model into the framework (from C++, R etc.) and
+* a quick way to integrate your generative model into the framework (from C++, R etc.) and
 * a non-intrusive, user-friendly way to parallelize inference computations (for your laptop to clusters, supercomputers and AWS)
 
 # Documentation
