@@ -1,13 +1,13 @@
-dist: trusty
+dist: xenial
 language: python
 python:
-- '3.4'
+- '3.6'
 addons:
   apt:
     packages:
     - gfortran
     - libboost-random-dev
-    - libpython3.4-dev
+    - libpython3.6-dev
     - python3-numpy
     - swig
     - libmpich-dev
